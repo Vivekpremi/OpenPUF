@@ -218,7 +218,7 @@ The 5–10× speedup from tightly-coupled ISA extensions brings ML-DSA signing f
 ### 7.1 ML-KEM — FIPS 203 (Key Encapsulation Mechanism)
 
 [ML-KEM](https://csrc.nist.gov/pubs/fips/203/final), standardized from CRYSTALS-Kyber, is the primary algorithm for general encryption and key establishment. The fundamental computational tasks within ML-KEM
-involve generating randomness polynomials and performing polynomial arithmetic. Randomness generation relies on uniform sampling or centered binomial distribution, driven by pseudorandom bytes derived from the Secure Hash Algorithm 3 (SHA3) standard, specifically the Keccakf [1600] permutation. Polynomial arithmetic is efficiently executed using the Number Theoretic Transform (NTT), which reduces the complexity of polynomial multiplication to a quasi-linear O(n×log n), where n is the polynomial degree.  It operates on the polynomial ring **R_q = Z_q[x] / (x^256 + 1)** where q = 3,329, and is based on the hardness of the **Module Learning with Errors (M-LWE)** problem.
+involve **generating randomness polynomials** and performing **polynomial arithmetic**. Randomness generation relies on uniform sampling or centered binomial distribution, driven by pseudorandom bytes derived from the **Secure Hash Algorithm 3 (SHA3) standard**, specifically the **Keccakf [1600] permutation**. Polynomial arithmetic is efficiently executed using the **Number Theoretic Transform (NTT)**, which reduces the complexity of polynomial multiplication to a quasi-linear O(n×log n), where n is the polynomial degree.  It operates on the po lynomial ring **R_q = Z_q[x] / (x^256 + 1)** where q = 3,329, and is based on the hardness of the **Module Learning with Errors (M-LWE)** problem.
 
 **Parameter sets:**
 
