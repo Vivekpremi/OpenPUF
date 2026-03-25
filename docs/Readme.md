@@ -357,6 +357,13 @@ If the mode is not cSHAKE, the padding logic accepts the incoming message bitstr
 
 After the Keccak round completes the last block, the padding logic asserts a signal to notify the software. The signal generates the keccak_done interrupt. The software is now able to read the digest(hash output) in Keccak State memory(1600 bit memory) region. The software completes the operation by issuing Done command after reading the digest. The padding logic clears internal variables and goes back to Idle state.
 
+### Keccak State Access
+After the Keccak round completes the hashing operation, the contents of the Keccak state contain the digest value. The software can access the 1600 bit of the Keccak state directly through the window of the output SHA3/SHAKE register. 
+/////////////////should i add compile time masking feature??////////////////////////\
+
+The Keccak state is valid only after the sponge absorbing process is completed. 
+
+
 **Two hardware implementation approaches:**
 
 | Approach | Latency | Gate Count (kGE) | Area @ SKY130 | Best For |
