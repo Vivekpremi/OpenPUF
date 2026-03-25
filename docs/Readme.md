@@ -355,7 +355,7 @@ If the mode is not cSHAKE, the padding logic accepts the incoming message bitstr
 
 ![states of the engine](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg)
 
-
+After the Keccak round completes the last block, the padding logic asserts a signal to notify the software. The signal generates the keccak_done interrupt. The software is now able to read the digest(hash output) in Keccak State memory(1600 bit memory) region. The software completes the operation by issuing Done command after reading the digest. The padding logic clears internal variables and goes back to Idle state.
 
 **Two hardware implementation approaches:**
 
