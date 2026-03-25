@@ -405,6 +405,7 @@ SQUEEZE:
 =======================================================================
 ```
 
+![Sponge](https://arxiv.org/html/2508.20653v1/x1.png)
 
 ### OpenTitan Reference Implementation
 
