@@ -351,7 +351,7 @@ SLH-DSA-SHAKE calls:
 Not used:  KMAC (defined in NIST SP 800-185, not part of FIPS 203/204/205)
 ```
 
-All four functions share a **single Keccak-f[1600] permutation core** — only rate, padding rule, and output length differ. One well-designed hardware core handles the complete hash requirement for all three finalized NIST standards.
+All four functions (SHA3-256/SHA3-512/SHAKE-128/SHAKE-256) share a **single Keccak-f[1600] permutation core** — only rate, padding rule, and output length differ. One well-designed hardware core handles the complete hash requirement for all three finalized NIST standards.
 
 ### Keccak State and Round Structure
 
