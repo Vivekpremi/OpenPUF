@@ -339,96 +339,259 @@ The [OpenTitan KMAC block](https://github.com/lowRISC/opentitan/tree/master/hw/i
 
 ---
 
-## 10. NTT Accelerator Design
+# NTT-Based Polynomial Multiplication Accelerator on Caravel
 
-### The Number Theoretic Transform
+## 1. Overview
 
-The NTT reduces polynomial multiplication from O(n²) to O(n log n) by exploiting the ring structure:
-
-```
-c = INTT( NTT(a) ∘ NTT(b) )
-```
-
-Both ML-KEM and ML-DSA use the ring **R_q = Z_q[x] / (x^256 + 1)** with n = 256, but require **different modular arithmetic**:
-
-| Algorithm | Modulus q | 2n-th Root of Unity | Reduction Method |
-|---|---|---|---|
-| ML-KEM (FIPS 203) | **3,329** | ζ = 17 | Barrett reduction |
-| ML-DSA (FIPS 204) | **8,380,417** | φ₂ₙ = 1,753 | Specialized reduction (2²³ ≡ 2¹³ − 1) |
-
-The NTT uses **negative-wrapped convolution (NWC)**, representing each degree-256 polynomial as 128 degree-one residues modulo quadratic factors. This structure is inherently parallel and suited for hardware pipelining.
-
-### Butterfly Unit
-
-The fundamental primitive is the butterfly unit (BU), supporting both Cooley-Tukey (CT) forward NTT and Gentleman-Sande (GS) inverse NTT through a configurable multiplexer:
-
-```
-CT butterfly:  (A, B) ← (A + Bω,  A − Bω)   mod q
-GS butterfly:  (A, B) ← (A + B,   (A − B)ω)  mod q
-```
-
-One configurable BU handles both NTT and INTT — and can be reconfigured for pointwise multiplication (PWM) — reducing total hardware cost.
-
-**Key optimization:** The technique by Zhang et al. eliminates the n⁻¹ (mod q) post-INTT multiplication by pre-processing twiddle factors and incorporating divide-by-2 directly into the addition unit.
-
-### Modular Reduction for ML-DSA
-
-For ML-DSA's modulus q = 8,380,417 = 2²³ − 2¹³ + 1, a specialized reduction exploits this relation:
-
-```
-s[45:0] ≡ s̄[45:23] + {s[42:33], 10'b0, s̄[45:43]}
-         + {s[32:23], s̄[45:33]} + 2¹³s[45:43] + z + m
-```
-
-Where m = 50,331,648. Result falls in (−q, 3q), which simplifies final correction hardware significantly. This avoids general Montgomery or Barrett reduction and is more area-efficient for this specific modulus.
-
-### Two-Mode Flexible Arithmetic Module
-
-From Truong et al.'s ML-DSA design, the arithmetic module supports two operation modes controlled by a mode signal:
-
-**Mode 1 — Fully Pipelined (8 PEs, for KeyGen and Verify):**
-```
-8 butterfly units (BU1–BU8), one per NTT layer for n=256
-Stall delay:     153 clock cycles (CC) from input to first output
-Throughput:      128 CC per polynomial NTT/INTT
-Parallelism:     8 coefficients per cycle
-```
-
-**Mode 2 — Folding Transform (4+4 PEs, for Sign):**
-```
-Module split into two independent 4-PE units
-Each PE handles two adjacent NTT layers via time-slicing (folding transform)
-Delay:           281 CC, throughput 256 CC per polynomial
-One unit:        computes vector y and w (lines 6–8 of Sign algorithm)
-Other unit:      all remaining Sign computations
-```
-
-This dual-mode design allows the Sign operation (which needs two parallel polynomial streams) to execute efficiently without doubling total hardware.
-
-### Twiddle Factor Storage Optimization
-
-Three twiddle factor arrays are normally required — ζⁱ (NTT), ζ⁻ⁱ (INTT), ζ^(2·BitRev7(i)+1) (PWM) — totaling 1.5×n storage. From Nguyen et al. (2025), both derived arrays can be computed from ζⁱ on-the-fly:
-
-```
-ζ⁻ⁱ         ≡ q − ζ^(n−i)                               (one subtractor)
-ζ^(2·BitRev7(2k+1)+1) ≡ q − ζ^(2·BitRev7(2k)+1)         (same subtractor)
-```
-
-This **reduces twiddle factor ROM by 3×** — a direct saving of n/2 × 12-bit words for ML-KEM-512.
-
-### Measured NTT Performance
-
-From Nguyen et al. ML-KEM ASIC (180nm, 93 MHz, 1.8V):
-
-```
-NTT/INTT per polynomial:    224 clock cycles
-PWM between two polynomials: 128 clock cycles
-ML-KEM-512  KeyGen/Encaps/Decaps: 10.6 / 13.6 / 21.3 µs  (FPGA @ 169 MHz)
-ML-KEM-768  KeyGen/Encaps/Decaps: 18.3 / 21.3 / 33.2 µs
-ML-KEM-1024 KeyGen/Encaps/Decaps: 26.6 / 30.2 / 45.0 µs
-```
+This project will implement a hardware accelerator for polynomial multiplication using the Number Theoretic Transform (NTT) on the Caravel SoC platform. The design will offload computationally intensive operations from the RISC-V processor, enabling efficient execution of lattice-based cryptographic algorithms such as ML-KEM (Kyber) and ML-DSA (Dilithium). The architecture is inspired from [this paper]
 
 ---
+
+## 2. Motivation
+
+Polynomial multiplication is a computationally intensive operation in post-quantum cryptography.
+
+| Method | Complexity |
+|-------|-----------|
+| Schoolbook | O(n²)      |
+| NTT-based  | O(n log n) |
+
+This accelerator aims to accelerate polynomial multiplication using a pipelined hardware architecture, improving performance.
+
+---
+
+## 3. Top-Level Hardware Architecture
+```
+                  +--------------------------+
+                  |     RISC-V Processor     |
+                  |        (VexRiscv)        |
+                  +------------+-------------+
+                               |
+                         Wishbone Bus
+                               |
+    =========================================================
+    ||              NTT ACCELERATOR DATAPATH                ||
+    =========================================================
+                               |
+        +----------------------+----------------------+
+        |                                             |
++---------------+                             +---------------+
+|     RAM0      |                             |     RAM1      |
+| (Even Coeffs) |                             | (Odd Coeffs)  |
++-------+-------+                             +-------+-------+
+        |                                             |
+        +----------------------+----------------------+
+                               |
+                        +------+------+
+                        | Address Gen |
+                        |  / Control  |
+                        +------+------+
+                               |
+                     +---------+---------+
+                     |  Input Buffer /   |
+                     |   Data Aligner    |
+                     +---------+---------+
+                               |
+                +--------------+--------------+
+                |   4x Butterfly Units (CPE)  |
+                |-----------------------------|
+                |  Twiddle Generator          |
+                |  (Mod Mult Based)           |
+                |-----------------------------|
+                |  Modular Arithmetic         |
+                |  (Mul + Add + Sub)          |
+                +--------------+--------------+
+                               |
+                               v
+                      +--------+--------+
+                      | Reordering Unit |
+                      |     (CRU)       |
+                      +--------+--------+
+                               |
+        +----------------------+----------------------+
+        |                                             |
++---------------+                             +---------------+
+|     RAM0      |                             |     RAM1      |
+| (Write Back)  |                             | (Write Back)  |
++---------------+                             +---------------+
+                               |
+                               v
+                     Output Polynomial C(x)
+```
+---
+
+## 4. Accelerator Microarchitecture
+
+### 4.1 Core Modules
+
+- Configurable Processing Element (CPE)  
+- Butterfly Units (BU)  
+- Modular Arithmetic Unit  
+- Reordering Unit (CRU)  
+- Memory Subsystem  
+- Control Unit  
+
+---
+
+### 4.2 NTT Computation Flow
+
+A(x), B(x)
+   ↓
+NTT(A), NTT(B)
+   ↓
+Point-wise Multiplication
+   ↓
+INTT(Result)
+   ↓
+C(x)
+
+---
+
+### 4.3 Butterfly Unit Architecture
+
+#### NTT (Cooley-Tukey)
+
+u = a + b·w mod q  
+v = a - b·w mod q
+
+#### INTT (Gentleman-Sande)
+
+u = w · (a + b) mod q  
+v = w · (a - b) mod q
+
+---
+
+### 4.4 Parallel Processing Architecture
+
+- 4 parallel radix-2 butterfly units  
+- Processes multiple coefficients per cycle  
+
+---
+
+### 4.5 Modular Arithmetic Design
+
+#### Modular Multiplication
+
+Technique: Barrett Reduction  
+
+- Division-free  
+- Uses precomputed constants  
+- Implemented using shift-and-add operations  
+
+---
+
+#### Modular Addition and Subtraction
+
+Technique: Conditional Reduction  
+
+Addition:
+- Compute s = a + b  
+- If s ≥ q, subtract q  
+
+Subtraction:
+- Compute d = a - b  
+- If d < 0, add q  
+
+---
+
+### 4.6 Memory Organization
+
+- RAM0 → even indices  
+- RAM1 → odd indices  
+- Sequential access pattern for coefficients  
+
+---
+
+### 4.7 Twiddle Factor Generation
+
+Twiddle factors are generated on-the-fly to reduce memory overhead and improve flexibility.
+
+#### Generation Strategy
+
+Twiddle factors follow a geometric progression:
+
+w(i+1) = w(i) × w_stage mod q
+
+Where:
+- w_stage is the base twiddle for a given stage  
+- w(0) = 1  
+
+---
+
+#### Execution Flow
+
+For each NTT stage:
+
+twiddle = 1  
+for each butterfly:  
+    use twiddle  
+    twiddle = twiddle × w_stage mod q  
+
+- Initial value is set to 1  
+- Subsequent values are generated using modular multiplication  
+
+---
+
+#### Hardware Realization
+
+- A modular multiplier is used for generation  
+- Integrated within the butterfly datapath  
+- Stage base values stored in registers (8 words total)  
+
+---
+
+#### Benefits
+
+- Eliminates large twiddle ROM  
+- Reduces area consumption  
+
+---
+
+### 4.8 Reordering Mechanism
+
+- Shift-register-based design  
+- Eliminates bit-reversal  
+
+---
+
+### 4.9 Pipeline Organization
+
+Load → Compute → Reorder → Store
+
+---
+
+## 5. Polynomial Multiplication Dataflow
+
+Polynomial size:
+- 256 coefficients per polynomial  
+
+Execution:
+- NTT: 8 stages  
+- PWM: 256 multiplications  
+- INTT: same structure  
+
+---
+
+## 6. Output Generation
+
+C(x) = A(x) * B(x)
+
+- Output: 256 coefficients  
+
+---
+
+## 7. System Integration
+
+- Connected via Wishbone bus  
+- Controlled via memory-mapped registers  
+
+---
+
+## 8. Key Features
+
+- Unified NTT/INTT architecture  
+- Low area requirement  
+- Reduced memory footprint  
 
 ## 11. Silicon Feasibility on SKY130
 
