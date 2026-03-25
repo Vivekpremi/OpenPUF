@@ -325,7 +325,7 @@ The internal state has a fixed width b=1600 bits and is divided into two regions
   1. The rate r, which is the portion of the state exposed to input and output.
   2. The capacity c, which remains hidden and determines the security level.
 
-The block diagram below explains how a sponge works.
+The block diagram below explains how a sponge works. It shows the complete flow, the input message is first padded then XORed with the current state and then sent to keccak round block.
 
 ![Sponge](https://arxiv.org/html/2508.20653v1/x1.png)
 
