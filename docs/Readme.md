@@ -364,7 +364,7 @@ Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed 
 ### Padding
 Padding logic supports **SHA3/SHAKE/cSHAKE algorithms**. All these share similiar datapath except the last part added next to the end of the message. SHA3 adds **2'b10**, SHAKE adds **4'b1111**, **cSHAKE adds 2b'00** and then follows the padding. This module talks to Keccak round logic with a more memory-like interface. The interface has an additional address signal on top of the valid, ready, and data signals.
 
-![padding logic](<img width="450" height="450" alt="image" src="https://github.com/user-attachments/assets/3ef2eb21-bb4a-4554-908d-936224aad938" />)
+![padding logic](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg)
 
 **Two hardware implementation approaches:**
 
