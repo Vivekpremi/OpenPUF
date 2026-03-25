@@ -287,7 +287,7 @@ All four functions (SHA3-256/SHA3-512/SHAKE-128/SHAKE-256) share a **single Kecc
 
 ### Keccak State and Round Structure
 
-The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR).
+The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR). The pseudocode for keccak can be studied from ([here](https://example.com).
 
 ![Block Diagram](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg)
 
@@ -318,14 +318,14 @@ After the Keccak round completes the hashing operation, the contents of the Kecc
 The Keccak state is valid only after the sponge absorbing process is completed, 0 otherwise. This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software. 
 
 
-### How a Sponge looks?
+### How does a sponge look?
 
 The sponge construction is a cryptographic framework that transforms a fixed-size permutation, such as Keccak-f[1600], into a variable-input, variable-output function suitable for hashing and pseudorandom generation.
 The internal state has a fixed width b=1600 bits and is divided into two regions:
   1. The rate r, which is the portion of the state exposed to input and output.
   2. The capacity c, which remains hidden and determines the security level.
 
-The block below explains the working of a sponge.
+The block below explains how a sponge works.
 
 ```
 ========================= SPONGE CONSTRUCTION =========================
@@ -408,7 +408,7 @@ SQUEEZE:
 
 ### OpenTitan Reference Implementation
 
-The [OpenTitan KMAC block](https://github.com/lowRISC/opentitan/tree/master/hw/ip/kmac) (taped out on TSMC 40nm via Google) provides a silicon-proven Keccak-f[1600] with **two-share DOM masking** for side-channel resistance. The core module [`keccak_round.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/keccak_round.sv) is an excellent architectural reference. Notes for SKY130 integration: strip the TL-UL bus interface for tightly-coupled use, re-synthesize for 130nm (~4× area penalty vs. 40nm), and convert SystemVerilog to Verilog 2001 for OpenLane compatibility.
+The [OpenTitan KMAC block](https://github.com/lowRISC/opentitan/tree/master/hw/ip/kmac) (taped out on TSMC 40nm via Google) provides a silicon-proven Keccak-f[1600] with **two-share DOM masking** for side-channel resistance. The core module [`keccak_round.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/keccak_round.sv) is an excellent architectural reference.
 
 ---
 
