@@ -287,16 +287,16 @@ All four functions (SHA3-256/SHA3-512/SHAKE-128/SHAKE-256) share a **single Kecc
 
 ### Keccak State and Round Structure
 
-The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR). The pseudocode for keccak can be studied from ([here](https://example.com).
+The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR). The pseudocode for keccak can be studied from [here](https://example.com).
 
 ![Block Diagram](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg)
 
-Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed at the 1st phase. Chi and Iota functions run at the 2nd phase. The Keccak round logic stores the intermediate state after processing the 1st phase. The stored values are then fed into the 2nd phase computing the Chi and Iota functions. The Chi function leverages first-order Domain-Oriented Masking (DOM) to deter SCA attacks. Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4 cycles/round) including the 1st and 2nd phases. The 1st phase completes in one cycle but the second phase takes 3 cycles to complete, since no. of DOM multipliers were compromised to save area and hardware at the cost of clock cycles. 
+Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed at the 1st phase. Chi and Iota functions run at the 2nd phase. The Keccak round logic stores the intermediate state after processing the 1st phase. The stored values are then fed into the 2nd phase computing the Chi and Iota functions. The Chi function leverages first-order [Domain-Oriented Masking](https://eprint.iacr.org/2017/395.pdf) (DOM) to deter SCA attacks. Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4 cycles/round) including the 1st and 2nd phases. The 1st phase completes in one cycle but the second phase takes 3 cycles to complete, since no. of DOM multipliers were compromised to save area and hardware at the cost of clock cycles. 
 
 ### Padding
 Padding logic supports **SHA3/SHAKE algorithms**. All these share similiar datapath except the last part added next to the end of the message. SHA3 adds **2'b10** and SHAKE adds **4'b1111** and then follows the padding. This module talks to Keccak round logic with a more memory-like interface. The interface has an additional address signal on top of the valid, ready, and data signals.
 
-![padding logic](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg)
+[padding logic](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg)
 
 The hashing process begins when the software issues the start command to CMD register . 
 <!-- 
