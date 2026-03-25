@@ -308,19 +308,27 @@ If cSHAKE is enabled, the padding logic expands the prefix value into a block si
 
 The expanded prefix value is transmitted to the Keccak round logic. After sending the block size, the padding logic triggers the Keccak round logic to run a full 24 rounds.
 If the mode is not cSHAKE, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity. The padding logic controls the data flow and makes the Keccak logic to run after sending a block size. 
---> The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
+--> The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block .
 
 ![states of the engine](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg)
 
 After the Keccak round completes the last block, the padding logic asserts a signal to notify the software. The signal generates the keccak_done interrupt. The software is now able to read the digest(hash output) in Keccak State memory(1600 bit memory) region. The software completes the operation by issuing Done command after reading the digest. The padding logic clears internal variables and goes back to Idle state.
 
 ### Keccak State Access
-After the Keccak round completes the hashing operation, the contents of the Keccak state contain the digest value. The software can access the 1600 bit of the Keccak state directly through the window of the output SHA3/SHAKE register. 
-/////////////////should i add compile time masking feature??////////////////////////\
 
+After the Keccak round completes the hashing operation, the contents of the Keccak state contain the digest value. The software can access the 1600 bit of the Keccak state directly through the window of the output SHA3/SHAKE register. 
 The Keccak state is valid only after the sponge absorbing process is completed, 0 otherwise. This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software. 
 
+
 ### How a Sponge looks?
+
+The sponge construction is a cryptographic framework that transforms a fixed-size permutation, such as Keccak-f[1600], into a variable-input, variable-output function suitable for hashing and pseudorandom generation.
+The internal state has a fixed width b=1600 bits and is divided into two regions:
+  1. The rate r, which is the portion of the state exposed to input and output.
+  2. The capacity c, which remains hidden and determines the security level.
+
+The block below explains the working of a sponge.
+
 ```
 ========================= SPONGE CONSTRUCTION =========================
 
