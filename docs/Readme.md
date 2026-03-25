@@ -357,6 +357,8 @@ All four functions share a **single Keccak-f[1600] permutation core** — only r
 
 The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR).
 
+![Block Diagram](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg)
+
 **Two hardware implementation approaches:**
 
 | Approach | Latency | Gate Count (kGE) | Area @ SKY130 | Best For |
