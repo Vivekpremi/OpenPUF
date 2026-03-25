@@ -210,70 +210,22 @@ The 5–10× speedup from tightly-coupled ISA extensions brings ML-DSA signing f
 
 ### 7.1 ML-KEM — FIPS 203 (Key Encapsulation Mechanism)
 
-[ML-KEM](https://csrc.nist.gov/pubs/fips/203/final), standardized from CRYSTALS-Kyber, is the primary algorithm for general encryption and key establishment. The fundamental computational tasks within ML-KEM
-involve **generating randomness polynomials** and performing **polynomial arithmetic**. Randomness generation relies on uniform sampling or centered binomial distribution, driven by pseudorandom bytes derived from the **Secure Hash Algorithm 3 (SHA3) standard**, specifically the **Keccakf [1600] permutation**. Polynomial arithmetic is efficiently executed using the **Number Theoretic Transform (NTT)**, which reduces the complexity of polynomial multiplication to a quasi-linear O(n×log n), where n is the polynomial degree.  It operates on the po lynomial ring **R_q = Z_q[x] / (x^256 + 1)** where q = 3,329, and is based on the hardness of the **Module Learning with Errors (M-LWE)** problem.
-
-**Parameter sets:**
-
-| Set | Public Key | Ciphertext | NIST Level | NSA Mandate |
-|---|---|---|---|---|
-| ML-KEM-512 | 800 B | 768 B | Level 1 | — |
-| ML-KEM-768 | 1,184 B | 1,088 B | Level 3 | — |
-| ML-KEM-1024 | 1,568 B | 1,568 B | Level 5 | **CNSA 2.0 Mandatory** |
-
-**Three core operations:** `ML-KEM.KeyGen` / `ML-KEM.Encaps` / `ML-KEM.Decaps`
-
-During KeyGen, matrix **A** is expanded from a public seed ρ via SHAKE-128. Secret vectors s, e are generated from a noise seed ρ′ via SHAKE-256. The public key is (ρ, t₁) and the secret key contains the packed lower bits of t = As + e.
+[ML-KEM](https://csrc.nist.gov/pubs/fips/203/final), standardized from CRYSTALS-Kyber, is the primary algorithm for general encryption and key establishment. The fundamental computational tasks within ML-KEM involve **generating randomness polynomials** and performing **polynomial arithmetic**. Randomness generation relies on uniform sampling or centered binomial distribution, driven by pseudorandom bytes derived from the **Secure Hash Algorithm 3 (SHA3) standard**, specifically the **Keccakf [1600] permutation**. Polynomial arithmetic is efficiently executed using the **Number Theoretic Transform (NTT)**, which reduces the complexity of polynomial multiplication to a quasi-linear O(n×log n), where n is the polynomial degree.
 
 **Computational profile on Cortex-M4:**
 ```
 Keccak / SHAKE (SHAKE-128, SHAKE-256, SHA3):  64–81% of total ML-KEM time
 NTT / INTT:                                   15–25% of total ML-KEM time
 ```
-
-**Hash primitives in ML-KEM (all Keccak-f[1600] based, KMAC not used):**
-
-| Primitive | Rate | Used For |
-|---|---|---|
-| `SHAKE-128` | r = 1344 bits | `ExpandA` — generating matrix **A** from seed ρ |
-| `SHAKE-256` | r = 1088 bits | `ExpandS`, `ExpandMask`, key derivation, PRF |
-| `SHA3-256` | r = 1088 bits | Hashing public key components |
-| `SHA3-512` | r = 576 bits | G primitive — seed expansion in KeyGen |
-
 ### 7.2 ML-DSA — FIPS 204 (Digital Signature Algorithm)
 
-[ML-DSA](https://csrc.nist.gov/pubs/fips/204/final), standardized from CRYSTALS-Dilithium, uses the **"Fiat-Shamir with Aborts"** approach. Security is based on hardness of **M-LWE** (key recovery resistance) and **M-SIS** (strong unforgeability). Unlike FALCON, Dilithium uses uniform sampling — greatly simplifying constant-time implementation and eliminating floating-point hardware requirements.
-
-**Parameter sets (modulus q = 8,380,417 for all levels):**
-
-| Set | Public Key | Signature | NIST Level | NSA Mandate |
-|---|---|---|---|---|
-| ML-DSA-44 | 1,312 B | 2,420 B | Level 2 | — |
-| ML-DSA-65 | 1,952 B | 3,293 B | Level 3 | — |
-| ML-DSA-87 | 2,592 B | 4,595 B | Level 5 | **CNSA 2.0 Mandatory** |
-
-**Three core operations:** `KeyGen` / `Sign` / `Verify`
-
-The Sign operation uses a **rejection sampling loop** — the signature (c̃, z, h) is rejected and retried if polynomial norms ‖z‖∞ ≥ γ₁ − β or ‖r₀‖∞ ≥ γ₂ − β. Average retry counts per the FIPS 204 specification: 4.25 (level 2), 5.1 (level 3), 3.85 (level 5).
-
-ML-DSA introduces a **"hedged" signing mode** alongside deterministic signing — selected by the parameter `rnd`. The hedged mode adds randomness to facilitate countermeasures against side-channel and fault attacks.
+[ML-DSA](https://csrc.nist.gov/pubs/fips/204/final), is a digital signature scheme based on CRYSTALS Dilithium, a member of the Cryptographic Suite for Algebraic Lattices (CRYSTALS) and a digital signature scheme based on the ‘‘Fiat-Shamir with Aborts’’ approach. Unlike Kyber and Falcon,  Dilithium uses uniform sampling rather than discrete Gaussian distribution for secret randomness generation. The major computation tasks here include sampling of short random polynomials, performing polynomial arithimatic and executing challenge response generation via hashing. Randomness generation rely heavily on SHA3 and the polynomial arithmetic can be done very efficiently by using NTT.
 
 **Computational profile on Cortex-M4:**
 ```
 Keccak / SHAKE:  ~43% of ML-DSA execution time
 NTT / INTT:      ~35–40% of ML-DSA execution time
 ```
-
-**Hash primitives in ML-DSA:**
-
-| Primitive | Used For |
-|---|---|
-| `SHAKE-128` | `ExpandA` — generates matrix **A ∈ R_q^{k×l}** (at level 5: 56 polynomials = 344 kbits of output) |
-| `SHAKE-256` | Everything else: `ExpandS`, `ExpandMask`, `SampleInBall`, H(μ ∥ w₁), H(tr ∥ M), key derivation |
-
-**Critical hardware insight (Truong et al., 2024):** Rather than a unified SHAKE-128/256 core as in prior works, using two independent Keccak modules — a **double 96-bit datapath core for SHAKE-128** and a **single 64-bit core for SHAKE-256** — allows simultaneous matrix expansion and secret vector generation, substantially reducing overall latency.
-
----
 
 ## 8. Core Architecture
 
