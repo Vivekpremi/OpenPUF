@@ -397,7 +397,7 @@ SQUEEZE:
    READ from STATE → PERMUTE → repeat
 
 =======================================================================
-'''
+```
 
 
 ### OpenTitan Reference Implementation
