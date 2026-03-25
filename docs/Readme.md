@@ -339,28 +339,28 @@ The [OpenTitan KMAC block](https://github.com/lowRISC/opentitan/tree/master/hw/i
 
 ---
 
-# 10. NTT-Based Polynomial Multiplication Accelerator on Caravel
+# NTT-Based Polynomial Multiplication Accelerator on Caravel
 
 ## 10.1. Overview
 
-This project will implement a hardware accelerator for polynomial multiplication using the Number Theoretic Transform (NTT) on the Caravel SoC platform. The design will offload computationally intensive operations from the RISC-V processor, enabling efficient execution of lattice-based cryptographic algorithms such as ML-KEM (Kyber) and ML-DSA (Dilithium). The architecture is inspired from [this paper]
-
+This project aims to implement a hardware accelerator for polynomial multiplication using the Number Theoretic Transform (NTT) on the Caravel SoC platform. The accelerator is designed to offload computationally intensive polynomial operations from the RISC-V processor, enabling efficient execution of lattice-based post-quantum cryptographic algorithms such as ML-KEM (Kyber) and ML-DSA (Dilithium). The architecture is inspired by state-of-the-art NTT accelerator designs and focuses on achieving high throughput with low area overhead.
 
 
 ## 10.2. Motivation
 
-Polynomial multiplication is a computationally intensive operation in post-quantum cryptography.
+Polynomial multiplication is a computationally intensive operation and forms the primary performance bottleneck in post-quantum cryptographic schemes.
 
 | Method | Complexity |
 |-------|-----------|
 | Schoolbook | O(n²)      |
 | NTT-based  | O(n log n) |
 
-This accelerator aims to accelerate polynomial multiplication using a pipelined hardware architecture, improving performance.
-
-
+By transforming polynomial multiplication into the NTT domain, the computational complexity is significantly reduced. This accelerator leverages a pipelined hardware architecture to efficiently execute NTT-based multiplication, improving performance while maintaining hardware efficiency.
 
 ## 10.3. Top-Level Hardware Architecture
+
+The accelerator is integrated with a RISC-V processor through the Wishbone bus. The processor handles control and configuration, while the accelerator performs high-speed polynomial computations.
+
 ```
                   +--------------------------+
                   |     RISC-V Processor     |
@@ -417,23 +417,29 @@ This accelerator aims to accelerate polynomial multiplication using a pipelined 
                                |
                                v
                      Output Polynomial C(x)
+
 ```
+
+This architecture separates the **control plane (CPU + Wishbone)** from the **data plane (NTT datapath)**, enabling efficient and parallel computation.
 
 
 ## 10.4. Accelerator Microarchitecture
 
 ### 10.4.1 Core Modules
 
-- Configurable Processing Element (CPE)  
-- Butterfly Units (BU)  
-- Modular Arithmetic Unit  
-- Reordering Unit (CRU)  
-- Memory Subsystem  
-- Control Unit  
+The accelerator is composed of the following modules:
 
+- **Configurable Processing Element (CPE):** Core computation engine responsible for executing NTT, INTT, and point-wise multiplication  
+- **Butterfly Units (BU):** Perform radix-2 butterfly operations using modular arithmetic  
+- **Modular Arithmetic Unit:** Implements modular multiplication, addition, and subtraction  
+- **Reordering Unit (CRU):** Handles data permutation between stages  
+- **Memory Subsystem:** Stores coefficients and intermediate results using dual-bank SRAM  
+- **Control Unit:** Manages sequencing, addressing, and overall operation  
 
 
 ### 10.4.2 NTT Computation Flow
+
+Polynomial multiplication is performed in the transform domain:
 
 A(x), B(x)
    ↓
@@ -445,9 +451,12 @@ INTT(Result)
    ↓
 C(x)
 
+This approach reduces computation from quadratic to near-linear complexity.
 
 
 ### 10.4.3 Butterfly Unit Architecture
+
+The butterfly unit is the fundamental computational block and supports both forward and inverse transforms using a shared datapath.
 
 #### NTT (Cooley-Tukey)
 
@@ -459,11 +468,14 @@ v = a - b·w mod q
 u = w · (a + b) mod q  
 v = w · (a - b) mod q
 
+The datapath is configured dynamically using control signals, allowing reuse of hardware for both operations.
+
 
 ### 10.4.4 Parallel Processing Architecture
 
 - 4 parallel radix-2 butterfly units  
-- Processes multiple coefficients per cycle  
+- Enables processing of multiple coefficient pairs per cycle  
+- Achieves high throughput while maintaining moderate area  
 
 
 ### 10.4.5 Modular Arithmetic Design
@@ -472,9 +484,9 @@ v = w · (a - b) mod q
 
 Technique: Barrett Reduction  
 
-- Division-free  
-- Uses precomputed constants  
-- Implemented using shift-and-add operations  
+- Eliminates division operations  
+- Uses precomputed constants for fast reduction  
+- Implemented using shift-and-add logic for hardware efficiency  
 
 
 #### Modular Addition and Subtraction
@@ -489,16 +501,22 @@ Subtraction:
 - Compute d = a - b  
 - If d < 0, add q  
 
+These operations are low-latency and critical for high-speed butterfly execution.
+
 
 ### 10.4.6 Memory Organization
 
-- RAM0 → even indices  
-- RAM1 → odd indices  
-- Sequential access pattern for coefficients  
+- Dual-bank SRAM structure:
+  - RAM0 stores even-index coefficients  
+  - RAM1 stores odd-index coefficients  
+
+- Enables parallel access for butterfly operations  
+- Sequential access pattern simplifies address generation  
+
 
 ### 10.4.7 Twiddle Factor Generation
 
-Twiddle factors are generated on-the-fly to reduce memory overhead and improve flexibility.
+Twiddle factors are generated on-the-fly to reduce memory overhead.
 
 #### Generation Strategy
 
@@ -507,69 +525,83 @@ Twiddle factors follow a geometric progression:
 w(i+1) = w(i) × w_stage mod q
 
 Where:
-- w_stage is the base twiddle for a given stage  
-- w(0) = 1 
+- w_stage is the stage-specific base twiddle  
+- w(0) = 1  
+
 
 #### Execution Flow
 
-For each NTT stage:
+For each stage:
 
 twiddle = 1  
 for each butterfly:  
     use twiddle  
     twiddle = twiddle × w_stage mod q  
 
-- Initial value is set to 1  
-- Subsequent values are generated using modular multiplication  
-
 
 #### Hardware Realization
 
-- A modular multiplier is used for generation  
-- Integrated within the butterfly datapath  
-- Stage base values stored in registers (8 words total)  
+- Implemented using a modular multiplier  
+- Integrated within butterfly units  
+- Stage base values stored in small register set  
+
 
 #### Benefits
 
 - Eliminates large twiddle ROM  
-- Reduces area consumption  
+- Reduces memory usage and area  
+
 
 ### 10.4.8 Reordering Mechanism
 
-- Shift-register-based design  
-- Eliminates bit-reversal  
+- Implemented using shift-register-based architecture  
+- Eliminates the need for explicit bit-reversal memory
+
 
 ### 10.4.9 Pipeline Organization
 
-Load → Compute → Reorder → Store
+Load → Compute → Reorder → Store  
+
+- Fully pipelined architecture  
+- Overlaps memory access, computation, and data movement  
+- Ensures high throughput with minimal stalls  
+
 
 ## 10.5. Polynomial Multiplication Dataflow
 
-Polynomial size:
-- 256 coefficients per polynomial  
+- Polynomial size: 256 coefficients  
 
-Execution:
-- NTT: 8 stages  
-- PWM: 256 multiplications  
-- INTT: same structure  
+Execution breakdown:
+- NTT: 8 stages (log₂ 256)  
+- PWM: 256 coefficient-wise multiplications  
+- INTT: same structure as NTT  
+
+All stages maintain the same number of coefficients.
+
 
 ## 10.6. Output Generation
 
 C(x) = A(x) * B(x)
 
-- Output: 256 coefficients  
+- Result is reduced modulo \( x^n + 1 \)  
+- Final output contains 256 coefficients  
+
 
 ## 10.7. System Integration
 
-- Connected via Wishbone bus  
-- Controlled via memory-mapped registers  
+- Accelerator connected via Wishbone bus  
+- CPU handles configuration, control, and data movement  
+- Computation fully offloaded to hardware  
+
 
 ## 10.8. Key Features
 
 - Unified NTT/INTT architecture  
-- Low area requirement  
-- Reduced memory footprint  
+- High-throughput pipelined design  
+- Low area and memory footprint  
+- On-the-fly twiddle generation
 
+---
 ## 11. Silicon Feasibility on SKY130
 
 ### Area Budget Analysis
