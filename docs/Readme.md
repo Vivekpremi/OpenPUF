@@ -289,10 +289,7 @@ All four functions (SHA3-256/SHA3-512/SHAKE-128/SHAKE-256) share a **single Kecc
 
 The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR). The pseudocode for keccak can be studied from [here](https://example.com).
 
-<figure>
-  <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg" alt="diagram">
-  <figcaption></figcaption>
-</figure>
+
 <figure>
   <a href="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg" target="_blank">
     <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg" alt="diagram">
