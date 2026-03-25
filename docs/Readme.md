@@ -605,7 +605,8 @@ C(x) = A(x) * B(x)
 - 
 ## 10.9. Reference
 _
-Dam, Duc-Thuan & Nguyen, Trong-Hung & Tran, Thai-Ha & Le, Duc Hung & Hoang, Trong-Thuc & Pham, Cong-Kha. (2024). High-Efficiency Multi-Standard Polynomial Multiplication Accelerator on RISC-V SoC for Post-Quantum Cryptography. IEEE Access. 12. 195015-195031. 10.1109/ACCESS.2024.3520592._
+Dam, Duc-Thuan & Nguyen, Trong-Hung & Tran, Thai-Ha & Le, Duc Hung & Hoang, Trong-Thuc & Pham, Cong-Kha. (2024). High-Efficiency Multi-Standard Polynomial Multiplication Accelerator on RISC-V SoC for Post-Quantum Cryptography.
+
 ---
 ## 11. Silicon Feasibility on SKY130
 
