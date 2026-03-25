@@ -310,10 +310,7 @@ The expanded prefix value is transmitted to the Keccak round logic. After sendin
 If the mode is not cSHAKE, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity. The padding logic controls the data flow and makes the Keccak logic to run after sending a block size. 
 --> The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block .
 
-<figure>
-  <img src="" alt="diagram">
-  <figcaption></figcaption>
-</figure>
+![padding fsm](Screenshot 2026-03-26 035832.png)
 
 After the Keccak round completes the last block, the padding logic asserts a signal to notify the software. The signal generates the keccak_done interrupt. The software is now able to read the digest(hash output) in Keccak State memory(1600 bit memory) region. The software completes the operation by issuing Done command after reading the digest. The padding logic clears internal variables and goes back to Idle state.
 
