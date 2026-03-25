@@ -366,9 +366,16 @@ Padding logic supports **SHA3/SHAKE/cSHAKE algorithms**. All these share similia
 
 ![padding logic](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg)
 
-The hashing process begins when the software issues the start command to CMD . If cSHAKE is enabled, the padding logic expands the prefix value into a block size. The block size is determined by a register whose value can be updated by the software when the hashing engine is in idle state. 
+The hashing process begins when the software issues the start command to CMD register . If cSHAKE is enabled, the padding logic expands the prefix value into a block size. The block size is determined by a register whose value can be updated by the software when the hashing engine is in idle state. The block on the basis of register value is shown in the table below.
 
 <img width="590" height="205" alt="image" src="https://github.com/user-attachments/assets/8b8fe064-2255-4ed8-8997-05f585771eff" />
+
+The expanded prefix value is transmitted to the Keccak round logic. After sending the block size, the padding logic triggers the Keccak round logic to run a full 24 rounds.
+If the mode is not cSHAKE, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity. The padding logic controls the data flow and makes the Keccak logic to run after sending a block size. The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE/cSHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
+
+![states of the engine](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg)
+
+
 
 **Two hardware implementation approaches:**
 
