@@ -311,7 +311,7 @@ If the mode is not cSHAKE, the padding logic accepts the incoming message bitstr
 --> The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block .
 
 <figure>
-  <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg" alt="diagram">
+  <img src="" alt="diagram">
   <figcaption></figcaption>
 </figure>
 
