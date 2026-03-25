@@ -328,9 +328,11 @@ The internal state has a fixed width b=1600 bits and is divided into two regions
   2. The capacity c, which remains hidden and determines the security level.
 
 The block diagram below explains how a sponge works. It shows the complete flow, the input message is first padded then XORed with the current state and then sent to keccak round block.
+
 <figure>
-  <img src="https://arxiv.org/html/2508.20653v1/x1.png" alt="diagram">
-  <figcaption></figcaption>
+  <a href="https://arxiv.org/html/2508.20653v1" target="_blank">
+    <img src="https://arxiv.org/html/2508.20653v1/x1.png" alt="diagram">
+  </a>
 </figure>
 
 ### OpenTitan Reference Implementation
