@@ -256,7 +256,8 @@ NTT / INTT:      ~35–40% of ML-DSA execution time
 │  └──────────────────┘                                               │
 └──────────────────────────────────────────────────────────────────────┘
 
-// this need to be changed 
+```
+// this need to be changed
 ## Accelerator Integration Strategy
 
 This project proposes the integration of dedicated post-quantum cryptographic (PQC) accelerators within the Caravel framework to enable a quantum-secure SoC while addressing the computational limitations of embedded processors.
@@ -273,7 +274,6 @@ Lower energy consumption on resource-constrained platforms
 
 This integration will transform the baseline Caravel platform into a PQC-secure SoC, capable of efficiently supporting quantum-resistant cryptographic primitives, and will demonstrate a practical pathway for deploying PQC in IoT and edge devices.
 
-```
 
 ## 9. Keccak-f[1600] — The Universal Bottleneck
 
