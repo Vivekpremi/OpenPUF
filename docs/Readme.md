@@ -359,6 +359,8 @@ The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. Th
 
 ![Block Diagram](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg)
 
+Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed at the 1st phase. Chi and Iota functions run at the 2nd phase. If masking is enabled, the Keccak round logic stores the intermediate state after processing the 1st phase. The stored values are then fed into the 2nd phase computing the Chi and Iota functions. But if not enabled then both phases run at same time.
+
 **Two hardware implementation approaches:**
 
 | Approach | Latency | Gate Count (kGE) | Area @ SKY130 | Best For |
