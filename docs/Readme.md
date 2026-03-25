@@ -610,7 +610,39 @@ _
 Dam, Duc-Thuan & Nguyen, Trong-Hung & Tran, Thai-Ha & Le, Duc Hung & Hoang, Trong-Thuc & Pham, Cong-Kha. (2024). High-Efficiency Multi-Standard Polynomial Multiplication Accelerator on RISC-V SoC for Post-Quantum Cryptography.
 
 ---
-## 11. Silicon Feasibility on SKY130
+
+## 11. CPU - Accelarator Communication
+
+The CPU communicates with the accelerators through the Wishbone bus using memory-mapped registers (MMIO). Each accelerator is assigned a dedicated address range, allowing the CPU to interact with it using standard load and store instructions.
+
+The CPU configures the accelerator through control registers. These registers are used to:
+
+- Select the operation mode 
+- Enable data loading into internal memory or state registers
+- Control execution (start, reset, stage control)
+- Data Transfer
+
+Input data (such as polynomial coefficients or message blocks) is written by the CPU into data registers. The accelerator stores this data internally based on the selected mode. 
+
+For example, 
+- In the NTT accelerator, data is written into RAM0 and RAM1
+- In the Keccak accelerator, data is written into the internal state array
+- 
+**Execution**
+
+Computation is started by setting the start bit in the control register. Once triggered, the accelerator runs independently and executes the complete operation without further CPU involvement.
+
+**Completion Notification**
+
+After finishing execution, the accelerator raises an interrupt signal to notify the CPU. This avoids continuous polling and improves overall efficiency.
+
+**Result Retrieval**
+
+The CPU reads the output data from the accelerator through memory-mapped registers once the computation is complete.
+
+
+
+## 12. Silicon Feasibility on SKY130
 
 ### Area Budget Analysis
 
