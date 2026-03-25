@@ -345,7 +345,7 @@ The [OpenTitan KMAC block](https://github.com/lowRISC/opentitan/tree/master/hw/i
 
 This project will implement a hardware accelerator for polynomial multiplication using the Number Theoretic Transform (NTT) on the Caravel SoC platform. The design will offload computationally intensive operations from the RISC-V processor, enabling efficient execution of lattice-based cryptographic algorithms such as ML-KEM (Kyber) and ML-DSA (Dilithium). The architecture is inspired from [this paper]
 
----
+
 
 ## 10.2. Motivation
 
@@ -358,7 +358,7 @@ Polynomial multiplication is a computationally intensive operation in post-quant
 
 This accelerator aims to accelerate polynomial multiplication using a pipelined hardware architecture, improving performance.
 
----
+
 
 ## 10.3. Top-Level Hardware Architecture
 ```
@@ -418,7 +418,7 @@ This accelerator aims to accelerate polynomial multiplication using a pipelined 
                                v
                      Output Polynomial C(x)
 ```
----
+
 
 ## 10.4. Accelerator Microarchitecture
 
@@ -431,7 +431,7 @@ This accelerator aims to accelerate polynomial multiplication using a pipelined 
 - Memory Subsystem  
 - Control Unit  
 
----
+
 
 ### 10.4.2 NTT Computation Flow
 
@@ -445,7 +445,7 @@ INTT(Result)
    ↓
 C(x)
 
----
+
 
 ### 10.4.3 Butterfly Unit Architecture
 
@@ -459,14 +459,12 @@ v = a - b·w mod q
 u = w · (a + b) mod q  
 v = w · (a - b) mod q
 
----
 
 ### 10.4.4 Parallel Processing Architecture
 
 - 4 parallel radix-2 butterfly units  
 - Processes multiple coefficients per cycle  
 
----
 
 ### 10.4.5 Modular Arithmetic Design
 
@@ -478,7 +476,6 @@ Technique: Barrett Reduction
 - Uses precomputed constants  
 - Implemented using shift-and-add operations  
 
----
 
 #### Modular Addition and Subtraction
 
@@ -492,15 +489,12 @@ Subtraction:
 - Compute d = a - b  
 - If d < 0, add q  
 
----
 
 ### 10.4.6 Memory Organization
 
 - RAM0 → even indices  
 - RAM1 → odd indices  
 - Sequential access pattern for coefficients  
-
----
 
 ### 10.4.7 Twiddle Factor Generation
 
@@ -514,9 +508,7 @@ w(i+1) = w(i) × w_stage mod q
 
 Where:
 - w_stage is the base twiddle for a given stage  
-- w(0) = 1  
-
----
+- w(0) = 1 
 
 #### Execution Flow
 
@@ -530,7 +522,6 @@ for each butterfly:
 - Initial value is set to 1  
 - Subsequent values are generated using modular multiplication  
 
----
 
 #### Hardware Realization
 
@@ -538,27 +529,19 @@ for each butterfly:
 - Integrated within the butterfly datapath  
 - Stage base values stored in registers (8 words total)  
 
----
-
 #### Benefits
 
 - Eliminates large twiddle ROM  
 - Reduces area consumption  
-
----
 
 ### 10.4.8 Reordering Mechanism
 
 - Shift-register-based design  
 - Eliminates bit-reversal  
 
----
-
 ### 10.4.9 Pipeline Organization
 
 Load → Compute → Reorder → Store
-
----
 
 ## 10.5. Polynomial Multiplication Dataflow
 
@@ -570,22 +553,16 @@ Execution:
 - PWM: 256 multiplications  
 - INTT: same structure  
 
----
-
 ## 10.6. Output Generation
 
 C(x) = A(x) * B(x)
 
 - Output: 256 coefficients  
 
----
-
 ## 10.7. System Integration
 
 - Connected via Wishbone bus  
 - Controlled via memory-mapped registers  
-
----
 
 ## 10.8. Key Features
 
