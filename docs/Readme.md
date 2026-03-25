@@ -366,6 +366,10 @@ Padding logic supports **SHA3/SHAKE/cSHAKE algorithms**. All these share similia
 
 ![padding logic](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg)
 
+The hashing process begins when the software issues the start command to CMD . If cSHAKE is enabled, the padding logic expands the prefix value into a block size. The block size is determined by a register whose value can be updated by the software when the hashing engine is in idle state. 
+
+<img width="590" height="205" alt="image" src="https://github.com/user-attachments/assets/8b8fe064-2255-4ed8-8997-05f585771eff" />
+
 **Two hardware implementation approaches:**
 
 | Approach | Latency | Gate Count (kGE) | Area @ SKY130 | Best For |
