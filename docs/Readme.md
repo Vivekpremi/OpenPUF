@@ -339,15 +339,15 @@ The [OpenTitan KMAC block](https://github.com/lowRISC/opentitan/tree/master/hw/i
 
 ---
 
-# NTT-Based Polynomial Multiplication Accelerator on Caravel
+# 10. NTT-Based Polynomial Multiplication Accelerator on Caravel
 
-## 1. Overview
+## 10.1. Overview
 
 This project will implement a hardware accelerator for polynomial multiplication using the Number Theoretic Transform (NTT) on the Caravel SoC platform. The design will offload computationally intensive operations from the RISC-V processor, enabling efficient execution of lattice-based cryptographic algorithms such as ML-KEM (Kyber) and ML-DSA (Dilithium). The architecture is inspired from [this paper]
 
 ---
 
-## 2. Motivation
+## 10.2. Motivation
 
 Polynomial multiplication is a computationally intensive operation in post-quantum cryptography.
 
@@ -360,7 +360,7 @@ This accelerator aims to accelerate polynomial multiplication using a pipelined 
 
 ---
 
-## 3. Top-Level Hardware Architecture
+## 10.3. Top-Level Hardware Architecture
 ```
                   +--------------------------+
                   |     RISC-V Processor     |
@@ -420,9 +420,9 @@ This accelerator aims to accelerate polynomial multiplication using a pipelined 
 ```
 ---
 
-## 4. Accelerator Microarchitecture
+## 10.4. Accelerator Microarchitecture
 
-### 4.1 Core Modules
+### 10.4.1 Core Modules
 
 - Configurable Processing Element (CPE)  
 - Butterfly Units (BU)  
@@ -433,7 +433,7 @@ This accelerator aims to accelerate polynomial multiplication using a pipelined 
 
 ---
 
-### 4.2 NTT Computation Flow
+### 10.4.2 NTT Computation Flow
 
 A(x), B(x)
    ↓
@@ -447,7 +447,7 @@ C(x)
 
 ---
 
-### 4.3 Butterfly Unit Architecture
+### 10.4.3 Butterfly Unit Architecture
 
 #### NTT (Cooley-Tukey)
 
@@ -461,14 +461,14 @@ v = w · (a - b) mod q
 
 ---
 
-### 4.4 Parallel Processing Architecture
+### 10.4.4 Parallel Processing Architecture
 
 - 4 parallel radix-2 butterfly units  
 - Processes multiple coefficients per cycle  
 
 ---
 
-### 4.5 Modular Arithmetic Design
+### 10.4.5 Modular Arithmetic Design
 
 #### Modular Multiplication
 
@@ -494,7 +494,7 @@ Subtraction:
 
 ---
 
-### 4.6 Memory Organization
+### 10.4.6 Memory Organization
 
 - RAM0 → even indices  
 - RAM1 → odd indices  
@@ -502,7 +502,7 @@ Subtraction:
 
 ---
 
-### 4.7 Twiddle Factor Generation
+### 10.4.7 Twiddle Factor Generation
 
 Twiddle factors are generated on-the-fly to reduce memory overhead and improve flexibility.
 
@@ -547,20 +547,20 @@ for each butterfly:
 
 ---
 
-### 4.8 Reordering Mechanism
+### 10.4.8 Reordering Mechanism
 
 - Shift-register-based design  
 - Eliminates bit-reversal  
 
 ---
 
-### 4.9 Pipeline Organization
+### 10.4.9 Pipeline Organization
 
 Load → Compute → Reorder → Store
 
 ---
 
-## 5. Polynomial Multiplication Dataflow
+## 10.5. Polynomial Multiplication Dataflow
 
 Polynomial size:
 - 256 coefficients per polynomial  
@@ -572,7 +572,7 @@ Execution:
 
 ---
 
-## 6. Output Generation
+## 10.6. Output Generation
 
 C(x) = A(x) * B(x)
 
@@ -580,14 +580,14 @@ C(x) = A(x) * B(x)
 
 ---
 
-## 7. System Integration
+## 10.7. System Integration
 
 - Connected via Wishbone bus  
 - Controlled via memory-mapped registers  
 
 ---
 
-## 8. Key Features
+## 10.8. Key Features
 
 - Unified NTT/INTT architecture  
 - Low area requirement  
