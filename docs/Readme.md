@@ -292,7 +292,7 @@ The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. Th
 
 <figure>
   <a href="https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html" target="_blank">
-    <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg" alt="diagram">
+    <img src="https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg" alt="diagram">
   </a>
 </figure>
 
