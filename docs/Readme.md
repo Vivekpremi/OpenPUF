@@ -308,8 +308,7 @@ If cSHAKE is enabled, the padding logic expands the prefix value into a block si
 
 The expanded prefix value is transmitted to the Keccak round logic. After sending the block size, the padding logic triggers the Keccak round logic to run a full 24 rounds.
 If the mode is not cSHAKE, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity. The padding logic controls the data flow and makes the Keccak logic to run after sending a block size. 
---> 
-The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE/cSHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
+--> The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
 
 ![states of the engine](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg)
 
@@ -319,28 +318,87 @@ After the Keccak round completes the last block, the padding logic asserts a sig
 After the Keccak round completes the hashing operation, the contents of the Keccak state contain the digest value. The software can access the 1600 bit of the Keccak state directly through the window of the output SHA3/SHAKE register. 
 /////////////////should i add compile time masking feature??////////////////////////\
 
-The Keccak state is valid only after the sponge absorbing process is completed. 
+The Keccak state is valid only after the sponge absorbing process is completed, 0 otherwise. This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software. 
+
+### How a Sponge looks?
+```
+========================= SPONGE CONSTRUCTION =========================
+
+                    1600-bit INTERNAL STATE
+          +-------------------------------------------+
+          |         RATE (r bits)   |  CAPACITY (c)   |
+          +-------------------------------------------+
+
+=========================== ABSORB PHASE ==============================
+
+Input Message (after padding) split into r-bit blocks:
+
+   M0        M1        M2        ...        Mn
+   |         |         |                    |
+   v         v         v                    v
+
++-----------------------------------------------------------+
+|                       STATE (initially 0)                 |
++-----------------------------------------------------------+
+
+Step i:
+
+   STATE[0:r] = STATE[0:r] XOR Mi
+                 (inject input block)
+
+   STATE = Keccak_f(STATE)
+           (24-round permutation)
+
+Repeat for all blocks:
+
+   M0 → XOR → PERMUTE
+   M1 → XOR → PERMUTE
+   ...
+   Mn → XOR → PERMUTE
+
+After last block → absorption complete
 
 
-**Two hardware implementation approaches:**
+=========================== SQUEEZE PHASE =============================
 
-| Approach | Latency | Gate Count (kGE) | Area @ SKY130 | Best For |
-|---|---|---|---|---|
-| Serialized (multi-cycle rounds) | 24 × N cycles | 6–10 | 0.3–0.5 mm² | Area-constrained IoT nodes |
-| Full-speed pipelined (24-cycle) | 24 cycles | 20–25 | 1.0–1.5 mm² | High-throughput applications |
+Now extract output from SAME STATE:
 
-### Optimized Hash Architecture for ML-DSA
+                +-------------------------------------------+
+                |         RATE (r bits)   |  CAPACITY (c)   |
+                +-------------------------------------------+
 
-From Truong et al. (Inha, 2024): Two **independent** hash modules in parallel:
+                     |
+                     |  read
+                     v
 
-- **SHAKE-128 module** — Double 96-bit datapath Keccak cores, rate r=1344. Absorbs 256-bit seed + 16-bit nonce in 4 clock cycles, then squeezes 14 cycles per polynomial block. Generates matrix **A** polynomials ~144 cycles each.
-- **SHAKE-256 module** — Single 64-bit datapath core. Handles all other sampling and hashing operations.
+                  Output Block O0  (first r bits)
 
-This parallel approach allows simultaneous generation of matrix **A** and secret vectors s₁, s₂ — the dominant operation in all three ML-DSA algorithms.
+If more output required:
 
-### Optimized Hash Architecture for ML-KEM
+   STATE = Keccak_f(STATE)
 
-From Nguyen et al. (UEC Tokyo, 2025): A tightly integrated SHA3 module that **merges hashing and sampling** using a multifunctional FIFO buffer. The pseudorandom byte stream output is fed directly back into the input FIFO via mode switching, allowing sampling to proceed in parallel with the next Keccak permutation. This eliminates the need for a dedicated r-bit (1,344-bit) output FIFO — saving area while maintaining full throughput.
+   read next:
+
+                  Output Block O1
+
+Repeat:
+
+   O0 → PERMUTE → O1 → PERMUTE → O2 → ...
+
+=======================================================================
+
+
+============================= SUMMARY =================================
+
+ABSORB:
+   XOR input into STATE → PERMUTE → repeat
+
+SQUEEZE:
+   READ from STATE → PERMUTE → repeat
+
+=======================================================================
+'''
+
 
 ### OpenTitan Reference Implementation
 
