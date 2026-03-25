@@ -359,7 +359,12 @@ The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. Th
 
 ![Block Diagram](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg)
 
-Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed at the 1st phase. Chi and Iota functions run at the 2nd phase. If masking is enabled, the Keccak round logic stores the intermediate state after processing the 1st phase. The stored values are then fed into the 2nd phase computing the Chi and Iota functions. But if not enabled then both phases run at same time.
+Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed at the 1st phase. Chi and Iota functions run at the 2nd phase. If masking is enabled, the Keccak round logic stores the intermediate state after processing the 1st phase. The stored values are then fed into the 2nd phase computing the Chi and Iota functions. But if not enabled then both phases run at same time. The Chi function leverages first-order Domain-Oriented Masking (DOM) to deter SCA attacks. Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4 cycles/round) including the 1st and 2nd phases. The 1st phase completes in one cycle but the second phase takes 3 cycles to complete, since no. of DOM multipliers were compromised to save area and hardware at the cost of clock cycles. 
+
+### Padding
+Padding logic supports **SHA3/SHAKE/cSHAKE algorithms**. All these share similiar datapath except the last part added next to the end of the message. SHA3 adds **2'b10**, SHAKE adds **4'b1111**, **cSHAKE adds 2b'00** and then follows the padding. This module talks to Keccak round logic with a more memory-like interface. The interface has an additional address signal on top of the valid, ready, and data signals.
+
+![padding logic](<img width="450" height="450" alt="image" src="https://github.com/user-attachments/assets/3ef2eb21-bb4a-4554-908d-936224aad938" />)
 
 **Two hardware implementation approaches:**
 
