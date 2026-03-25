@@ -290,7 +290,7 @@ All four functions (SHA3-256/SHA3-512/SHAKE-128/SHAKE-256) share a **single Kecc
 The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. The permutation applies 24 rounds of five step mappings in sequence: **θ** (column parity mixing), **ρ** (bitwise rotation), **π** (lane permutation), **χ** (nonlinear substitution), **ι** (round constant XOR). The pseudocode for keccak can be studied from [here](https://example.com).
 
 <figure>
-  <img src="[[image.png]([https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg))" alt="diagram">
+  <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg" alt="diagram">
   <figcaption>a keccak round</figcaption>
 </figure>
 
@@ -300,7 +300,7 @@ Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed 
 Padding logic supports **SHA3/SHAKE algorithms**. All these share similiar datapath except the last part added next to the end of the message. SHA3 adds **2'b10** and SHAKE adds **4'b1111** and then follows the padding. This module talks to Keccak round logic with a more memory-like interface. The interface has an additional address signal on top of the valid, ready, and data signals.
 
 <figure>
-  <img src="[image.png](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg)" alt="diagram">
+  <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg" alt="diagram">
   <figcaption>padding</figcaption>
 </figure>
 
@@ -314,10 +314,9 @@ The expanded prefix value is transmitted to the Keccak round logic. After sendin
 If the mode is not cSHAKE, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity. The padding logic controls the data flow and makes the Keccak logic to run after sending a block size. 
 --> The padding logic, after receiving the Process command, appends proper ending bits with respect to the mode SHA3/SHAKE. The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block .
 
-![states of the engine]()
 <figure>
-  <img src="[image.png](https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg)" alt="diagram">
-  <figcaption>padding</figcaption>
+  <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg" alt="diagram">
+  <figcaption>padding fsm</figcaption>
 </figure>
 
 After the Keccak round completes the last block, the padding logic asserts a signal to notify the software. The signal generates the keccak_done interrupt. The software is now able to read the digest(hash output) in Keccak State memory(1600 bit memory) region. The software completes the operation by issuing Done command after reading the digest. The padding logic clears internal variables and goes back to Idle state.
@@ -336,8 +335,10 @@ The internal state has a fixed width b=1600 bits and is divided into two regions
   2. The capacity c, which remains hidden and determines the security level.
 
 The block diagram below explains how a sponge works. It shows the complete flow, the input message is first padded then XORed with the current state and then sent to keccak round block.
-
-![Sponge](https://arxiv.org/html/2508.20653v1/x1.png)
+<figure>
+  <img src="https://arxiv.org/html/2508.20653v1/x1.png" alt="diagram">
+  <figcaption>sponge architecture</figcaption>
+</figure>
 
 ### OpenTitan Reference Implementation
 
