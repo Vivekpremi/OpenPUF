@@ -291,7 +291,7 @@ The Keccak state is a **5×5 array of 64-bit lanes** = 1,600-bit total state. Th
 
 <figure>
   <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg](https://opentitan.org/book/hw/ip/kmac/doc/keccak-round.svg" alt="diagram">
-  <figcaption>a keccak round</figcaption>
+  <figcaption></figcaption>
 </figure>
 
 Keccak round logic has two phases inside. Theta, Rho, Pi functions are executed at the 1st phase. Chi and Iota functions run at the 2nd phase. The Keccak round logic stores the intermediate state after processing the 1st phase. The stored values are then fed into the 2nd phase computing the Chi and Iota functions. The Chi function leverages first-order [Domain-Oriented Masking](https://eprint.iacr.org/2017/395.pdf) (DOM) to deter SCA attacks. Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4 cycles/round) including the 1st and 2nd phases. The 1st phase completes in one cycle but the second phase takes 3 cycles to complete, since no. of DOM multipliers were compromised to save area and hardware at the cost of clock cycles. 
@@ -301,7 +301,7 @@ Padding logic supports **SHA3/SHAKE algorithms**. All these share similiar datap
 
 <figure>
   <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding.svg" alt="diagram">
-  <figcaption>padding</figcaption>
+  <figcaption></figcaption>
 </figure>
 
 The hashing process begins when the software issues the start command to CMD register . 
@@ -316,7 +316,7 @@ If the mode is not cSHAKE, the padding logic accepts the incoming message bitstr
 
 <figure>
   <img src="https://opentitan.org/book/hw/ip/kmac/doc/sha3-padding-fsm.svg" alt="diagram">
-  <figcaption>padding fsm</figcaption>
+  <figcaption></figcaption>
 </figure>
 
 After the Keccak round completes the last block, the padding logic asserts a signal to notify the software. The signal generates the keccak_done interrupt. The software is now able to read the digest(hash output) in Keccak State memory(1600 bit memory) region. The software completes the operation by issuing Done command after reading the digest. The padding logic clears internal variables and goes back to Idle state.
@@ -337,7 +337,7 @@ The internal state has a fixed width b=1600 bits and is divided into two regions
 The block diagram below explains how a sponge works. It shows the complete flow, the input message is first padded then XORed with the current state and then sent to keccak round block.
 <figure>
   <img src="https://arxiv.org/html/2508.20653v1/x1.png" alt="diagram">
-  <figcaption>sponge architecture</figcaption>
+  <figcaption></figcaption>
 </figure>
 
 ### OpenTitan Reference Implementation
