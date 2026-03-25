@@ -456,6 +456,8 @@ This approach reduces computation from quadratic to near-linear complexity.
 
 ### 10.4.3 Butterfly Unit Architecture
 
+![butter fly](https://github.com/Vivekpremi/OpenPUF/blob/main/docs/Screenshot%202026-03-26%20045336.png?raw=true)
+
 The butterfly unit is the fundamental computational block and supports both forward and inverse transforms using a shared datapath.
 
 #### NTT (Cooley-Tukey)
@@ -482,7 +484,7 @@ The datapath is configured dynamically using control signals, allowing reuse of 
 
 #### Modular Multiplication
 
-Technique: Barrett Reduction  
+Technique: [Barrett Reduction](https://en.wikipedia.org/wiki/Barrett_reduction)  
 
 - Eliminates division operations  
 - Uses precomputed constants for fast reduction  
@@ -600,7 +602,9 @@ C(x) = A(x) * B(x)
 - High-throughput pipelined design  
 - Low area and memory footprint  
 - On-the-fly twiddle generation
-
+- 
+## 10.9. Reference
+[Dam, Duc-Thuan & Nguyen, Trong-Hung & Tran, Thai-Ha & Le, Duc Hung & Hoang, Trong-Thuc & Pham, Cong-Kha. (2024). High-Efficiency Multi-Standard Polynomial Multiplication Accelerator on RISC-V SoC for Post-Quantum Cryptography. IEEE Access. 12. 195015-195031. 10.1109/ACCESS.2024.3520592.](https://www.researchgate.net/publication/387480243_High-Efficiency_Multi-Standard_Polynomial_Multiplication_Accelerator_on_RISC-V_SoC_for_Post-Quantum_Cryptography/citations)
 ---
 ## 11. Silicon Feasibility on SKY130
 
