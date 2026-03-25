@@ -331,26 +331,6 @@ The Keccak-f[1600] permutation is the single shared primitive underlying all has
 
 **A hardware Keccak accelerator reduces the permutation from 56,529 cycles to 4,000 cycles — a 14× improvement per call.** Combined with NTT acceleration, total speedup reaches 7–8× for ML-KEM and 4–6× for ML-DSA.
 
-### Precise Primitive Mapping
-
-```
-ML-KEM calls:
-  SHAKE-128  →  r=1344 bits  →  ExpandA (matrix A from seed ρ)
-  SHAKE-256  →  r=1088 bits  →  ExpandS, ExpandMask, PRF, key derivation
-  SHA3-256   →  r=1088 bits  →  H primitive
-  SHA3-512   →  r=576 bits   →  G primitive (seed expansion in KeyGen)
-
-ML-DSA calls:
-  SHAKE-128  →  r=1344 bits  →  ExpandA (56 polynomials at level 5 = 344 kbits)
-  SHAKE-256  →  r=1088 bits  →  ExpandS, ExpandMask, SampleInBall,
-                                H(μ ∥ w₁), H(tr ∥ M), all other hashing
-
-SLH-DSA-SHAKE calls:
-  SHAKE-256  →  r=1088 bits  →  Everything (~99% of all computation)
-
-Not used:  KMAC (defined in NIST SP 800-185, not part of FIPS 203/204/205)
-```
-
 All four functions (SHA3-256/SHA3-512/SHAKE-128/SHAKE-256) share a **single Keccak-f[1600] permutation core** — only rate, padding rule, and output length differ. One well-designed hardware core handles the complete hash requirement for all three finalized NIST standards.
 
 ### Keccak State and Round Structure
