@@ -604,7 +604,7 @@ C(x) = A(x) * B(x)
 - High-throughput pipelined design  
 - Low area and memory footprint  
 - On-the-fly twiddle generation
-- 
+
 ## 10.9. Reference
 _
 Dam, Duc-Thuan & Nguyen, Trong-Hung & Tran, Thai-Ha & Le, Duc Hung & Hoang, Trong-Thuc & Pham, Cong-Kha. (2024). High-Efficiency Multi-Standard Polynomial Multiplication Accelerator on RISC-V SoC for Post-Quantum Cryptography.
@@ -627,7 +627,7 @@ Input data (such as polynomial coefficients or message blocks) is written by the
 For example, 
 - In the NTT accelerator, data is written into RAM0 and RAM1
 - In the Keccak accelerator, data is written into the internal state array
-- 
+  
 **Execution**
 
 Computation is started by setting the start bit in the control register. Once triggered, the accelerator runs independently and executes the complete operation without further CPU involvement.
@@ -687,7 +687,7 @@ The [asinghani/crypto-accelerator-chip](https://github.com/asinghani/crypto-acce
 
 ---
 
-## 12. Competitive Landscape
+## 13. Competitive Landscape
 
 ### Commercial Leaders in PQC Silicon
 
@@ -714,7 +714,7 @@ No open-source PQC ASIC exists. The [QUASAR-CREATE project](https://www.tum.de/)
 
 ---
 
-## 15. Project Roadmap
+## 14. Project Roadmap
 
 ### Phase 1 — Integration of Open-Source Accelerators
 
@@ -765,7 +765,7 @@ No open-source PQC ASIC exists. The [QUASAR-CREATE project](https://www.tum.de/)
 
 ---
 
-## 16. References
+## 15. References
 
 ### NIST Standards
 
